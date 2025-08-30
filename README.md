@@ -1,5 +1,5 @@
 ⚡ Workflow Overview
-<img src="docs/workflow.png" alt="Workflow Screenshot" width="800"/>
+
 
 Schedule Trigger ⏰
 
