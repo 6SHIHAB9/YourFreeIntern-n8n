@@ -1,0 +1,548 @@
+{
+  "name": "twitter",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Templates for normal tweets\nconst templates = [\n  \"transformation\",\n  \"hook-list-takeaway\",\n  \"interesting fact\",\n  \"Metaphor\",\n  \"contrast\",\n  \"motivation\",\n  \"triad\",\n  \"comparison\",\n  \"80/20 rule\",\n  \"callout\"\n];\n\n// Promo tweets\nconst promos = [\n  \"Ghosted Blog\",\n  \"Content farming\",\n  \"EMP0 — AI Revenue Team\",\n  \"n8n Discord Trigger Bot\"\n  \n  \n  \n  \n];\n// Track last output to avoid duplicates\nif (!global.lastTweet) {\n  global.lastTweet = null;\n}\n\nfunction getRandom(arr) {\n  return arr[Math.floor(Math.random() * arr.length)];\n}\n\nlet tweet;\n\ndo {\n  if (Math.random() < 0.2) {\n    // 20% chance → promo\n    tweet = getRandom(promos);\n  } else {\n    // 80% chance → template\n    tweet = getRandom(templates);\n  }\n} while (tweet === global.lastTweet); // prevent repeats\n\n// Save for next run\nglobal.lastTweet = tweet;\n\nreturn [{ json: { tweet } }];\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        0
+      ],
+      "id": "4b838060-da55-45c7-8d35-ce0b798520be",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.tweet }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are a ghostwriter who creates short, raw, non-repetitive tweets.  \nI will give you a \"content type\" (template).  \nYour job: generate a tweet in that style.  \n\nRules:  \n- Generate a tweet based on the given template.\n- Read all past tweets from the database using the Read Database tool (past_tweets column).\n- If the exact tweet (or a close duplicate) appears in read database tool in column past_tweets , regenerate and repeat this check until the tweet is unique.\n- Once a unique tweet is generated, append it to the past_tweets column in the log database tool for future reference.\n- Tweets must be punchy, edgy, and written in modern Twitter style.  \n- Keep it concise (2–4 lines). No hashtags. Minimal emojis (🔥 👑 only if it fits)  \n-Make tweets in the format of example tweets  for each template\n-- Use a separate line for each short phrase or thought.\n\nAvailable templates & patterns:  \n\n1. **Transformation** → Fail/fail/fail → sudden win.  \n   Example:  \n   2021: Skinny  \n   2022: Skinny  \n   2023: Skinny  \n   2024: Skinny  \n   2025: Unrecognizable  \n\n2. **Hook–List–Takeaway** → Bold statement → short list → lesson.  \n   Example:  \n   Don’t chase girls  \n   Chase:  \n   • skills  \n   • fitness  \n   • money  \n   Women chase you after  \n\n3. **Interesting Fact** → Myth-bust → stat → reassurance.  \n   Example:  \n   Success isn’t early  \n   The average founder is 45  \n   You’re not late  \n   You’re loading  \n\n4. **Metaphor** → Proverb → apply to daily grind.  \n   Example:  \n   Chess isn’t won in one move  \n   It’s a hundred small ones  \n   Your life is the same  \n   Win by inches  \n\n5. **Contrast** → Dumb vs smart behavior.  \n   Example:  \n   Losers scroll TikTok for fun  \n   Winners use it to sell  \n\n6. **Motivation** → Reject convention → replace with work.  \n   Example:  \n   Sleep in on Sunday?  \n   Someone else is training  \n   While you’re dreaming  \n   They’re eating your future  \n\n7. **Triad** → 3 parallel actions = new identity.  \n   Example:  \n   Build the body  \n   Build the mind  \n   Build the bank account  \n\n8. **Comparison** → System vs self-action.  \n   Example:  \n   Netflix kills time  \n   Books create empires  \n\n9. **80/20 Rule** → Split effort/discipline.  \n   Example:  \n   20% of gym time builds your body  \n   80% is in the kitchen  \n\n10. **Callout** → Excuse → “wrong” → harsh truth.  \n   Example:  \n   “I can’t focus”  \n   Wrong  \n   You just can’t put down your phone  \n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        272
+      ],
+      "id": "5d1720be-ff34-4fe2-b961-96b9acc1c315",
+      "name": "Tweet maker"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1LjB1CJ_kYumOzY8yv3nqO24c3YVR2TaVuNnzNAQ4ric",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        832,
+        448
+      ],
+      "id": "d0d9c062-e256-43a1-96f2-af5e64d084ee",
+      "name": "read database",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": ""
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1LjB1CJ_kYumOzY8yv3nqO24c3YVR2TaVuNnzNAQ4ric",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "PAST TWEETS": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('PAST_TWEETS', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "PAST TWEETS"
+          ],
+          "schema": [
+            {
+              "id": "PAST TWEETS",
+              "displayName": "PAST TWEETS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        960,
+        448
+      ],
+      "id": "1b3ca54d-3719-4b1a-bdc3-e2df68ed27cf",
+      "name": "log database",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": ""
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5d1e5c7f-f72b-46d4-8aaa-721cb97182c3",
+              "leftValue": "={{ $json.tweet }}",
+              "rightValue": "Ghosted Blog",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "4647df57-f1b6-4d0a-ba98-36e170a2ce25",
+              "leftValue": "={{ $json.tweet }}",
+              "rightValue": "Content farming",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "56bb1faa-d1e5-4f3e-a137-12bf256876c1",
+              "leftValue": "={{ $json.tweet }}",
+              "rightValue": "EMP0 — AI Revenue Team",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "ac140c17-1fd3-4f59-a448-acdc6c868eb7",
+              "leftValue": "={{ $json.tweet }}",
+              "rightValue": "n8n Discord Trigger Bot",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        0
+      ],
+      "id": "35705a25-e486-42b5-9095-0f87b573c673",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        832,
+        -48
+      ],
+      "id": "6dd3f06f-cf76-46c4-a7a2-0489f9102293",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "",
+          "name": ""
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 8,12,18 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -256,
+        0
+      ],
+      "id": "5ac47643-75b9-4e31-9905-25d979c22a65",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "content": "## TRIGGER\n",
+        "height": 400,
+        "width": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -304,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "5b47cda0-0860-4dcc-9971-7288c69fbd06",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "**Triggers at 8am,12pm,6pm**",
+        "height": 224,
+        "width": 150,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -288,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "c6b87255-1113-4bf1-9755-25c126b4da5d",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// random delay in minutes\nconst delayMinutes = Math.floor(Math.random() * 120); // 0–120 for 2-hour window\nconst delayMilliseconds = delayMinutes * 60 * 1000;\n\nreturn new Promise(resolve => setTimeout(() => resolve([{ json: {} }]), delayMilliseconds ));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        0
+      ],
+      "id": "510963c4-6f29-448f-a5e6-9188521d86b2",
+      "name": "Time randomizer"
+    },
+    {
+      "parameters": {
+        "content": "**Generates a random number between 0–120 and waits for that many minutes, allowing tweets to be posted at pseudo-random times throughout the day instead of fixed scheduled times**",
+        "height": 304,
+        "width": 208,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -96,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "fc75dd7e-6ef8-44cc-9d36-7c273e20952a",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "**Randomly selects one of the 10 content strategy templates or one of the 4 promotional ads, with an 80% chance of picking a template and a 20% chance of picking a promo**",
+        "height": 400,
+        "width": 192,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "78bc109b-b42d-4bf4-8661-1e710ddb4739",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "**Checks whether the randomly selected item is a content strategy template or a promotional ad, then routes it accordingly: templates go to the main tweet generator, promos go to the promotional tweet generator**",
+        "height": 400,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        352,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "83a2af45-a8eb-454f-9258-05c40921b39c",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.tweet }}",
+        "options": {
+          "systemMessage": "=You are a professional tweet generator. Your job is to create a punchy, short, unique tweet for Twitter based on the ad object provided as input.\n\n-- Use a separate line for each short phrase or thought.\n\n\n\nHere are the ad objects (for reference, do NOT pick randomly — the AI should only use the ad object provided as input):\n\n[\n    {\n      \"id\": \"ghosted_blog\",\n      \"name\": \"Ghosted Blog\",\n      \"url\": \"https://www.ghosted.blog/\",\n      \"category\": \"service\",\n      \"goal\": \"direct_revenue\",\n      \"price_points\": [\"$300/mo (300 posts)\", \"$700/mo (720 posts)\"],\n      \"primary_cta\": \"Start 300-Post Plan\",\n      \"alt_cta\": \"Book a Strategy Call\",\n      \"key_proof\": [\"10–24 posts/day\", \"ROI explainer on page\"],\n      \"tweet_templates\": [\n        \"Tired of an empty blog? Ghosted Blog posts {10-24} SEO articles/day for you. Launch in 24h. From ${price}/mo → {url}\",\n        \"Content that compounds: {posts_per_day} posts/day, you edit after publish. See pricing (${price}/mo) → {url}\"\n      ]\n    },\n    {\n      \"id\": \"gumroad_cfv3\",\n      \"name\": \"Content Farming v3 (n8n workflow)\",\n      \"url\": \"https://0emp0.gumroad.com/l/content-farming-v3?layout=profile\",\n      \"category\": \"info_product\",\n      \"goal\": \"direct_revenue\",\n      \"price_points\": [\"$29 one-time\", \"$129 w/ setup guidance\"],\n      \"primary_cta\": \"Buy the workflow\",\n      \"key_proof\": [\"3-agent architecture\", \"10 posts/day\", \"Charts/images/SEO\"],\n      \"tweet_templates\": [\n        \"Ship 10 SEO posts/day with my n8n workflow. One-time ${price}. Demo + import link → {url}\",\n        \"Replace a content team with a single workflow: planner + writer + editor. ${price} on Gumroad → {url}\"\n      ]\n    },\n    {\n      \"id\": \"emp0_agency\",\n      \"name\": \"EMP0 — AI Revenue Team\",\n      \"url\": \"https://emp0.com/\",\n      \"category\": \"agency\",\n      \"goal\": \"awareness_leadgen\",\n      \"primary_cta\": \"Talk to us\",\n      \"key_proof\": [\"7-day deploy\", \"ROI in 30 days\", \"LinkedIn outreach + content + funnel\"],\n      \"tweet_templates\": [\n        \"Want an AI team that books calls while you sleep? EMP0 deploys in 7 days → {url}\",\n        \"Leads, content, sales—automated under your brand. See case studies → {url}\"\n      ]\n    },\n    {\n      \"id\": \"discord_trigger_bot\",\n      \"name\": \"n8n Discord Trigger Bot\",\n      \"url\": \"https://n8n-discord-trigger-bot.emp0.com/\",\n      \"category\": \"tool\",\n      \"goal\": \"awareness_ecosystem\",\n      \"primary_cta\": \"Add to Discord\",\n      \"key_proof\": [\"Verified\", \"Used in 100+ servers\", \"Read-only & secure\"],\n      \"tweet_templates\": [\n        \"Forward any Discord message/reaction to n8n/Zapier/Make with one command: /setup {webhook}. Add bot → {url}\",\n        \"Turn Discord into your ops panel. Real-time webhooks to n8n. Add the verified bot → {url}\"\n      ]\n    },\n    {\n      \"id\": \"vibe_code_cafe\",\n      \"name\": \"Vibe Code Cafe\",\n      \"url\": \"https://vibecodecafe.com/\",\n      \"category\": \"platform\",\n      \"goal\": \"awareness_community\",\n      \"primary_cta\": \"Submit your project\",\n      \"key_proof\": [\"Explore/Categories/Leaderboard\", \"Project submission flow\"],\n      \"tweet_templates\": [\n        \"Makers: submit your project, get votes, meet users. Vibe Code Cafe → {url}\",\n        \"Launching soon? List it on Vibe Code Cafe and start collecting signals → {url}\"\n      ]\n    }\n]\n\n---\n\nInstructions for generating the tweet:\n\n1. Use **only the ad object provided as input**. Do NOT pick another ad.  \n2. Pick one template from this ad object.  \n3. Replace placeholders (`{posts_per_day}`, `{price}`, `{url}`, `{webhook}`) with realistic or randomized values.  \n4. Make the tweet **punchy, short, Twitter-style, unique**.  \n5. Check the tweet database to avoid repeating past tweets.  \n6. Log the final tweet in the database for future reference.  \n7. Output **only one valid tweet** in plain text.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        -288
+      ],
+      "id": "7eca91be-88fe-41be-b557-b42a6c3d95f8",
+      "name": "Promotional Tweet maker"
+    },
+    {
+      "parameters": {
+        "content": "## **Generates a promotional tweet based on the provided ad template, ensuring it follows the ad’s structure and messaging.**",
+        "height": 624,
+        "width": 496,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        624,
+        -432
+      ],
+      "typeVersion": 1,
+      "id": "487f5e76-5713-4cfc-9d9d-fb6a541dcb70",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## **Generates a unique tweet while checking the database to avoid repetition, and logs the newly created tweet into the database for future reference and tracking.**",
+        "height": 512,
+        "width": 496,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        624,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "9e19bd1d-eb63-4c65-a2dd-b51079432e98",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1646841-fab2-4f7e-88e0-3107c176e4fa",
+              "name": "Tweet",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1264,
+        -32
+      ],
+      "id": "db0f3bc4-e511-4609-9e22-16ae584a61f5",
+      "name": "Tweet"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.Tweet }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        -32
+      ],
+      "id": "12a7c4c6-b02f-4d8d-b243-b3b367f474d9",
+      "name": "Creates the tweet",
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "",
+          "name": ""
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "read database": {
+      "ai_tool": [
+        [
+          {
+            "node": "Tweet maker",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "log database": {
+      "ai_tool": [
+        [
+          {
+            "node": "Tweet maker",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Promotional Tweet maker",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tweet maker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tweet maker": {
+      "main": [
+        [
+          {
+            "node": "Tweet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Tweet maker",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Promotional Tweet maker",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Time randomizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Time randomizer": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Promotional Tweet maker": {
+      "main": [
+        [
+          {
+            "node": "Tweet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tweet": {
+      "main": [
+        [
+          {
+            "node": "Creates the tweet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cd295c2e-12b9-43f8-bc97-d1724de95104",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4296d27a14ca09fe198423f2c64358629742b7e64781a34de7c8c97820eb34b8"
+  },
+  "id": "GSvvwFFwPTyfdfgo",
+  "tags": []
+}
